@@ -1,0 +1,549 @@
+/* ==========================================================================
+   ONNA — practice site
+   Structure:
+   1. Tokens          5. About
+   2. Base            6. Drop 001
+   3. Header          7. Footer
+   4. Hero            8. Motion preferences
+   ========================================================================== */
+
+
+/* 1. Tokens ---------------------------------------------------------------
+   Change colours and fonts here and the whole site follows. */
+:root {
+  --ink: #080808;
+  --butter: #f2de85;
+  --paper: #e7e5dd;
+  --paper-deep: #d9d6ca;
+  --muted: #5a574e;
+  --muted-soft: #a3a094;
+
+  /* Caveat: flowing handwriting for headings, nav and notes.
+     Klee One: calm pen handwriting for reading text. */
+  --font-display: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-body: "Klee One", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-hand: var(--font-display);
+
+  /* Side margins. Grows with the screen, and content never gets wider than 1500px. */
+  --gutter: max(clamp(28px, 8vw, 150px), calc((100vw - 1500px) / 2));
+  --col-gap: clamp(12px, 2vw, 28px);
+
+  --fs-small: 0.9rem;
+  --fs-body: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --fs-statement: clamp(2.5rem, 1.3rem + 4.4vw, 5.2rem);
+
+  /* Hand-drawn hairlines (two variants so repeated rules never look stamped) */
+  --wobble-a: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3C50 1.2 110 4.8 190 3S330 1.6 400 3.4' fill='none' stroke='%23080808' stroke-opacity='.5' stroke-width='1.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --wobble-b: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 6' preserveAspectRatio='none'%3E%3Cpath d='M0 2.6C80 4.4 140 1.4 220 3.2S340 4.6 400 2.8' fill='none' stroke='%23080808' stroke-opacity='.5' stroke-width='1.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+
+
+/* 2. Base ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+svg { display: block; max-width: 100%; }
+a { color: inherit; }
+p, h1, h2, h3, dl, dd, figure { margin: 0; }
+::selection { background: var(--butter); color: var(--ink); }
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.wrap {
+  width: 100%;
+  padding-inline: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 10;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: var(--butter);
+  text-decoration: none;
+}
+.skip-link:focus { top: 12px; }
+
+/* "Coming soon" marker, reused in hero and drop */
+.soon {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.soon__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: breathe 3.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(0.65); opacity: 0.45; }
+  50%      { transform: scale(1);    opacity: 1; }
+}
+
+
+/* 3. Header ---------------------------------------------------------------
+   Deliberately not sticky: it sits on the butter hero and leaves. */
+.site-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(18px, 2.4vw, 32px) var(--gutter);
+  color: var(--ink);
+}
+
+.brand { display: inline-block; text-decoration: none; }
+.brand__mark {
+  width: clamp(80px, 7vw, 104px);
+  height: auto;
+  aspect-ratio: 476 / 149;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(1.1rem, 2.6vw, 2.2rem);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.nav a,
+.footer__nav a {
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.32em;
+  transition: text-decoration-color 0.25s ease;
+}
+.nav a:hover,
+.nav a:focus-visible,
+.footer__nav a:hover,
+.footer__nav a:focus-visible { text-decoration-color: currentColor; }
+
+
+/* 4. Hero -----------------------------------------------------------------
+   Layers: mark, then the notebook "details" layer (masked to a lens),
+   then the tagline. The lens position is set from js/main.js via --mx/--my. */
+.hero {
+  --lens: clamp(170px, 24vmax, 340px);
+
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(96px, 10vw, 150px) var(--gutter) clamp(32px, 4vw, 64px);
+  background: var(--butter);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.hero__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-items: center;
+}
+
+.hero__mark {
+  width: min(100%, 1040px);
+  height: auto;
+  aspect-ratio: 476 / 149;
+  overflow: visible;
+  color: var(--ink);
+  filter: url(#rough);
+}
+
+/* Stacked (ON / NA) layout for tall, narrow screens. JS toggles the class
+   and the viewBox; CSS moves the second row. */
+.hero__mark.is-stacked {
+  width: min(100%, 420px);
+  aspect-ratio: 252 / 299;
+}
+.hero__mark.is-stacked .glyph--n2,
+.hero__mark.is-stacked .glyph--a {
+  transform: translate(-257px, 151px);
+}
+
+/* The logo writes itself once. */
+.wipe {
+  stroke-dasharray: 1;
+  animation: write 0.95s cubic-bezier(0.55, 0.1, 0.25, 1) both;
+  animation-delay: calc((var(--i) * 0.42 + var(--j) * 0.22 + 0.25) * 1s);
+}
+@keyframes write {
+  0%   { stroke-dashoffset: 1; opacity: 0; }
+  4%   { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+/* Notebook layer. Butter lines with "difference" blending turn black on the
+   butter field and butter on the black letters, like stitching. */
+.hero__details {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  color: var(--butter);
+  mix-blend-mode: difference;
+  pointer-events: none;
+
+  -webkit-mask-image: radial-gradient(circle var(--lens) at var(--mx, -500px) var(--my, -500px), #000 0%, rgba(0, 0, 0, 0.75) 42%, transparent 100%);
+          mask-image: radial-gradient(circle var(--lens) at var(--mx, -500px) var(--my, -500px), #000 0%, rgba(0, 0, 0, 0.75) 42%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+.hero__details .notes text {
+  font-family: var(--font-hand);
+  font-size: 30px;
+}
+
+.hero__foot {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.4rem 3rem;
+}
+.hero__tagline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.7rem, 1.4rem + 4.8vw, 6rem);
+  line-height: 0.98;
+}
+
+
+/* 5. About ---------------------------------------------------------------- */
+.about {
+  padding-block: clamp(96px, 15vw, 220px) clamp(80px, 12vw, 180px);
+  background: var(--paper);
+}
+
+.about__statement {
+  max-width: 13em;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-statement);
+  line-height: 1.04;
+}
+.about__statement .reveal-line { display: block; }
+.about__statement .reveal-line + .reveal-line { margin-top: 0.45em; }
+
+/* Lines darken as they arrive. Only when JS is on, so the text is never
+   left faint if scripts fail. */
+.js .reveal-line {
+  color: var(--muted-soft);
+  transition: color 1.2s ease;
+}
+.js .reveal-line.is-in { color: var(--ink); }
+
+.about__body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  align-items: start;
+  margin-top: clamp(64px, 10vw, 150px);
+}
+.about__plates { grid-column: 1 / span 5; }
+.about__copy   { grid-column: 7 / span 5; max-width: 36rem; }
+.about__copy p + p { margin-top: 1.1em; }
+.about__copy em { font-family: var(--font-display); font-style: normal; font-weight: 500; font-size: 1.3em; line-height: 1; }
+
+/* Placeholder plates */
+.plate-fig {
+  transform: translate3d(0, var(--dy, 0px), 0);
+  will-change: transform;
+}
+.plate {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.plate--a {
+  aspect-ratio: 4 / 5;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 9px, rgba(8, 8, 8, 0.07) 9px 10px),
+    var(--paper-deep);
+}
+.plate--b {
+  aspect-ratio: 3 / 2;
+  background: var(--butter);
+}
+.plate__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: visible;
+  filter: url(#rough-frame);
+}
+.plate__frame rect {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.plate__note {
+  font-family: var(--font-hand);
+  font-size: 2.3rem;
+  line-height: 1;
+  transform: rotate(-2.5deg);
+}
+.plate-fig figcaption {
+  margin-top: 0.7rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.plate-fig--a { width: 84%; position: relative; z-index: 1; }
+.plate-fig--b { width: 50%; margin: -14% 0 0 auto; position: relative; z-index: 2; }
+
+/* Values as a spec sheet */
+.spec__title {
+  margin-top: clamp(48px, 6vw, 80px);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.spec { margin-top: 0.75rem; padding-bottom: 6px; position: relative; }
+.spec::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 6px;
+  background: var(--wobble-b) center / 100% 6px no-repeat;
+}
+.spec__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 9.5rem) 1fr;
+  gap: 0.25rem 1.25rem;
+  padding: 0.95rem 0;
+}
+.spec__row::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: var(--wobble-a) center / 100% 6px no-repeat;
+}
+.spec__row:nth-child(even)::before { background-image: var(--wobble-b); }
+.spec__row dt { font-weight: 600; }
+.spec__row dd { color: var(--muted); }
+
+
+/* 6. Drop 001 -------------------------------------------------------------- */
+.drop { background: var(--paper); padding-top: clamp(40px, 6vw, 90px); }
+
+.drop__intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  align-items: end;
+  row-gap: 1.6rem;
+}
+.drop__title {
+  grid-column: 1 / span 8;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(5rem, 1rem + 15vw, 14rem);
+  font-weight: 500;
+  line-height: 0.8;
+}
+.drop__text {
+  grid-column: 9 / span 4;
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+}
+.drop__text p:first-child { max-width: 24rem; }
+
+.drop__panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--col-gap);
+  margin-top: clamp(56px, 9vw, 120px);
+  padding-inline: var(--gutter);
+}
+
+.panel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(520px, 76vh, 760px);
+  padding: clamp(48px, 6vw, 88px) var(--gutter) clamp(84px, 8vw, 116px);
+  overflow: hidden;
+}
+.panel--on-butter {
+  background: var(--butter);
+  color: var(--ink);
+  --tee-fill: var(--ink);
+  --tee-logo: var(--butter);
+  --tee-line: var(--ink);
+  --tee-stitch: var(--butter);
+}
+.panel--on-black {
+  background: var(--ink);
+  color: var(--butter);
+  --tee-fill: var(--butter);
+  --tee-logo: var(--ink);
+  --tee-line: var(--butter);
+  --tee-stitch: var(--ink);
+}
+.panel figcaption {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(22px, 2.8vw, 36px);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tee {
+  width: min(100%, 360px);
+  height: auto;
+  overflow: visible;
+  transform-origin: 50% 0;
+  transition: transform 1.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tee__art { filter: url(#rough); }
+.tee__logo { color: var(--tee-logo); }
+.tee__stitch {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+@media (hover: hover) {
+  .panel:hover .tee { transform: rotate(2.2deg); }
+  .panel:hover .tee__stitch { opacity: 1; }
+}
+@media (hover: none) {
+  .tee__stitch { opacity: 0.75; }
+}
+
+
+/* 7. Footer ---------------------------------------------------------------- */
+.site-footer {
+  position: relative;
+  background: var(--paper);
+  padding-block: clamp(36px, 5vw, 64px) clamp(28px, 3vw, 40px);
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 var(--gutter) auto var(--gutter);
+  height: 6px;
+  background: var(--wobble-a) center / 100% 6px no-repeat;
+}
+.footer__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: 1.6rem;
+  align-items: start;
+  padding-top: clamp(28px, 4vw, 48px);
+}
+.footer__inner .brand { grid-column: 1 / span 3; }
+.footer__note { grid-column: 4 / span 3; color: var(--muted); font-size: var(--fs-small); }
+.footer__nav {
+  grid-column: 7 / span 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+.footer__legal {
+  grid-column: 11 / span 2;
+  justify-self: end;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+
+/* Responsive ---------------------------------------------------------------- */
+@media (max-width: 1000px) {
+  .about__plates { grid-column: 1 / -1; max-width: 34rem; }
+  .about__copy   { grid-column: 1 / -1; margin-top: clamp(64px, 12vw, 110px); }
+
+  .drop__title { grid-column: 1 / -1; }
+  .drop__text  { grid-column: 1 / -1; }
+
+  .footer__inner .brand { grid-column: 1 / -1; }
+  .footer__note  { grid-column: 1 / -1; }
+  .footer__nav   { grid-column: 1 / -1; }
+  .footer__legal { grid-column: 1 / -1; justify-self: start; }
+}
+
+@media (max-width: 760px) {
+  .nav { gap: 1rem; font-size: 1.35rem; }
+  .plate-fig--a { width: 88%; }
+  .plate-fig--b { width: 62%; margin-top: 1.75rem; }
+  .drop__panels { grid-template-columns: 1fr; }
+  .panel { min-height: 560px; }
+  .spec__row { grid-template-columns: 1fr; padding: 0.85rem 0; }
+}
+
+
+/* 8. Motion preferences ----------------------------------------------------
+   No writing animation, no lens movement. The notebook layer is simply
+   shown, faint and static. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .wipe { animation: none; stroke-dashoffset: 0; }
+  .soon__dot { animation: none; }
+  .tee, .tee__stitch, .js .reveal-line { transition: none; }
+  .hero__details {
+    -webkit-mask-image: none;
+            mask-image: none;
+    opacity: 0.35;
+  }
+}
+
+/* No JavaScript: show the notebook layer faintly, since the lens can't run. */
+.no-js .hero__details {
+  -webkit-mask-image: none;
+          mask-image: none;
+  opacity: 0.3;
+}
